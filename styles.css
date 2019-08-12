@@ -37,15 +37,6 @@ body {
     margin-bottom: 7px;
 }
 
-.connector {
-    
-}
-
-.checkbox {
-}
-
-
-
 .todo-title {
     overflow-wrap: break-word;
 }
@@ -58,10 +49,7 @@ body {
     height: 20px;
 }
 .remove-button:hover {
-
     color: red;
-}
-.remove-span {
 }
 
 .botom-panel {
@@ -70,23 +58,13 @@ body {
     align-items: baseline;
 }
 
-.quantity {
-
-}
-.filter-buttons-container {
-}
-
-.filter-button {
-
-}
-
-.clear-completed-button {
-
-}
-
 .completed {
   text-decoration: line-through;
   color: gray;
+}
+
+.active {
+    color: orange;
 }
 
 

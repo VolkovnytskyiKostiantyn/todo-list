@@ -3,6 +3,7 @@
 let todos = [];
 let nextId = 1;
 let currentViewMode = 'All';
+let isFirstlyRendered = false;
 
 function createElement(tag) {
   return document.createElement(`${tag.toUpperCase()}`);
@@ -44,18 +45,24 @@ function addEventListeners() {
   const filterAllButton = document.querySelector('.filter-button-all');
   filterAllButton.addEventListener('click', () => {
     currentViewMode = 'All';
+    document.querySelector('.active').classList.remove('active');
+    document.querySelector('.filter-button-all').classList.add('active');
     renderTodos(todos, currentViewMode);
   });
 
   const filterActiveButton = document.querySelector('.filter-button-active');
   filterActiveButton.addEventListener('click', () => {
     currentViewMode = 'Active';
+    document.querySelector('.active').classList.remove('active');
+    document.querySelector('.filter-button-active').classList.add('active');
     renderTodos(todos, currentViewMode);
   });
 
   const filterCompletedButton = document.querySelector('.filter-button-completed');
   filterCompletedButton.addEventListener('click', () => {
     currentViewMode = 'Completed';
+    document.querySelector('.active').classList.remove('active');
+    document.querySelector('.filter-button-completed').classList.add('active');
     renderTodos(todos, currentViewMode);
   });
 
@@ -77,6 +84,7 @@ function fillTodoList(todo, index, todoList) {
   checkboxLabel.htmlFor = `checkbox_${todo.id}`;
   const todoTitle = createElement('span');
   if (todo.isCompleted) {
+    console.log('11');
     todoTitle.classList.add('completed');
   }
   todoTitle.innerHTML = todo.title;
@@ -94,18 +102,64 @@ function fillTodoList(todo, index, todoList) {
 }
 
 function renderTodos(todosArr, viewMode) {
-  while (document.body.firstChild) {
-    document.body.removeChild(document.body.firstChild);
+  if (document.querySelector('ul')) {
+    while (document.querySelector('ul').firstChild) {
+      document.querySelector('ul').removeChild(document.querySelector('ul').firstChild);
+    }
+  }
+  let mainContainer = document.querySelector('.main-container');
+  let inputField = document.querySelector('.input-field');
+  let todosContainer = document.querySelector('.todos-container');
+  let todoList = document.querySelector('.todo-list');
+
+
+  if (!isFirstlyRendered) {
+    mainContainer = createElement('section');
+    mainContainer.classList.add('main-container');
+    inputField = createElement('input');
+    inputField.classList.add('input-field');
+    todosContainer = createElement('div');
+    todosContainer.classList.add('todos-container');
+    todoList = createElement('ul');
+    todoList.classList.add('todo-list');
+
+    const bottomPanel = createElement('div');
+    bottomPanel.classList.add('botom-panel');
+
+    const itemsLeft = createElement('span');
+    itemsLeft.classList.add('quantity');
+
+    const buttonsContainer = createElement('div');
+    buttonsContainer.classList.add('filter-buttons-container');
+    const showAllButton = createElement('button');
+    showAllButton.type = 'button';
+    showAllButton.classList.add('filter-button-all');
+    showAllButton.classList.add('active');
+    showAllButton.innerText = 'All';
+    const showActiveButton = createElement('button');
+    showActiveButton.type = 'button';
+    showActiveButton.classList.add('filter-button-active');
+    showActiveButton.innerText = 'Active';
+    const showCompletedButton = createElement('button');
+    showCompletedButton.type = 'button';
+    showCompletedButton.classList.add('filter-button-completed');
+    showCompletedButton.innerText = 'Completed';
+    buttonsContainer.append(showAllButton, showActiveButton, showCompletedButton);
+
+    const clearCompletedButton = createElement('button');
+    clearCompletedButton.type = 'button';
+    clearCompletedButton.classList.add('clear-completed-button');
+    clearCompletedButton.innerText = 'Clear Completed';
+    bottomPanel.append(itemsLeft, buttonsContainer, clearCompletedButton);
+
+    mainContainer.append(inputField, todosContainer, bottomPanel);
+    document.body.append(mainContainer);
+
+    addEventListeners();
+    isFirstlyRendered = true;
   }
 
-  const mainContainer = createElement('section');
-  mainContainer.classList.add('main-container');
-  const inputField = createElement('input');
-  inputField.classList.add('input-field');
-  const todosContainer = createElement('div');
-  todosContainer.classList.add('todos-container');
-  const todoList = createElement('ul');
-  todoList.classList.add('todo-list');
+
   if (viewMode === 'All') {
     todosArr.forEach((todo, index) => {
       fillTodoList(todo, index, todoList);
@@ -116,7 +170,7 @@ function renderTodos(todosArr, viewMode) {
         fillTodoList(todo, index, todoList);
       }
     });
-  } else {
+  } else if (viewMode === 'Completed') {
     todos.forEach((todo, index) => {
       if (todo.isCompleted) {
         fillTodoList(todo, index, todoList);
@@ -124,38 +178,6 @@ function renderTodos(todosArr, viewMode) {
     });
   }
   todosContainer.append(todoList);
-
-  const bottomPanel = createElement('div');
-  bottomPanel.classList.add('botom-panel');
-
-  const itemsLeft = createElement('span');
-  itemsLeft.classList.add('quantity');
-
-  const buttonsContainer = createElement('div');
-  buttonsContainer.classList.add('filter-buttons-container');
-  const showAllButton = createElement('button');
-  showAllButton.type = 'button';
-  showAllButton.classList.add('filter-button-all');
-  showAllButton.innerText = 'All';
-  const showActiveButton = createElement('button');
-  showActiveButton.type = 'button';
-  showActiveButton.classList.add('filter-button-active');
-  showActiveButton.innerText = 'Active';
-  const showCompletedButton = createElement('button');
-  showCompletedButton.type = 'button';
-  showCompletedButton.classList.add('filter-button-completed');
-  showCompletedButton.innerText = 'Completed';
-  buttonsContainer.append(showAllButton, showActiveButton, showCompletedButton);
-
-  const clearCompletedButton = createElement('button');
-  clearCompletedButton.type = 'button';
-  clearCompletedButton.classList.add('clear-completed-button');
-  clearCompletedButton.innerText = 'Clear Completed';
-  bottomPanel.append(itemsLeft, buttonsContainer, clearCompletedButton);
-
-  mainContainer.append(inputField, todosContainer, bottomPanel);
-  document.body.append(mainContainer);
-  addEventListeners();
   updateItemsLeft(todos);
 }
 
@@ -167,28 +189,27 @@ function addTodo(event) {
       id: nextId,
     });
     renderTodos(todos, currentViewMode);
-    updateItemsLeft(todos);
     addEventListeners();
+    updateItemsLeft(todos);
     nextId += 1;
+    document.querySelector('.input-field').value = '';
   }
-  document.querySelector('.input-field').focus();
 }
 
 function removeTodo(event) {
   const indexToDelete = todos.findIndex(todo => todo.src === event.target.parentNode);
-  if ((indexToDelete + 1) === true) {
+  if (indexToDelete + 1) {
     todos.splice(indexToDelete, 1);
   }
   renderTodos(todos, currentViewMode);
-  updateItemsLeft(todos);
   addEventListeners();
+  updateItemsLeft(todos);
 }
 
 function clearCompleted() {
   todos = todos.filter(todo => !todo.isCompleted === true);
-  renderTodos(todos, 'All');
+  renderTodos(todos, currentViewMode);
   updateItemsLeft(todos);
-  addEventListeners();
 }
 
 
@@ -207,12 +228,12 @@ function toggleReadyState(event) {
     todos[choosenIndex].isCompleted = true;
   }
   renderTodos(todos, currentViewMode);
-  updateItemsLeft(todos);
   addEventListeners();
+  updateItemsLeft(todos);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   renderTodos(todos, currentViewMode);
   updateItemsLeft(todos);
-  addEventListeners();
+  console.log(document.querySelector('.filter-button-all'));
 });
